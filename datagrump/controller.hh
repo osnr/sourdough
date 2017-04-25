@@ -2,6 +2,7 @@
 #define CONTROLLER_HH
 
 #include <cstdint>
+#include <list>
 
 /* Congestion controller interface */
 
@@ -9,7 +10,13 @@ class Controller
 {
 private:
   bool debug_; /* Enables debugging output */
-
+  unsigned int the_window_size;
+  unsigned int inflight;
+  float tau;
+  float bw;
+  std::list<float> err;
+  const unsigned int err_max_sz;
+  float sum_err;
   /* Add member variables here */
 
 public:
@@ -36,7 +43,6 @@ public:
   /* How long to wait (in milliseconds) if there are no acks
      before sending one more datagram */
   unsigned int timeout_ms( void );
-  unsigned int the_window_size;
 };
 
 #endif
