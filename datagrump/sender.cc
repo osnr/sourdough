@@ -111,7 +111,7 @@ void DatagrumpSender::send_datagram( void )
 
 bool DatagrumpSender::window_is_open( void )
 {
-  return sequence_number_ - next_ack_expected_ < controller_.window_size();
+  return controller_.window_size() != 0;
 }
 
 int DatagrumpSender::loop( void )
@@ -129,7 +129,7 @@ int DatagrumpSender::loop( void )
 	return ResultType::Continue;
       },
       /* We're only interested in this rule when the window is open */
-      [&] () { return window_is_open(); } ) );
+      [&] () { return true; } ) );
 
   /* second rule: if sender receives an ack,
      process it and inform the controller

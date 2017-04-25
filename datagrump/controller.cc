@@ -27,8 +27,8 @@ Controller::Controller( const bool debug )
   }
 }
 
-uint64_t last_send = 0;
-
+uint64_t sendtime = 0;
+int sends_remaining = 0;
 /* Get current window size, in datagrams */
 unsigned int Controller::window_size( void )
 {
@@ -42,15 +42,13 @@ unsigned int Controller::window_size( void )
   // cout << "At time " << timestamp_ms() << " capacity is ";
 
   uint64_t time = timestamp_ms();
-  uint64_t capacity = 1; // Forward predict capacity.
-
-  for (uint64_t i = 0; i < 30; i++) {
-    capacity += capacity_over_time[time + i];
+  if (sendtime != time) {
+    sendtime = time;
+    sends_remaining = capacity_over_time[time - 2];
   }
+  sends_remaining--;
 
-  cout << "time: " << time << ", capacity: " << capacity << endl;
-
-  return capacity;
+  return sends_remaining >= 0;
 }
 
 /* A datagram was sent */
@@ -65,7 +63,6 @@ void Controller::datagram_was_sent( const uint64_t sequence_number,
     cerr << "At time " << send_timestamp
 	 << " sent datagram " << sequence_number << endl;
   }
-  last_send = send_timestamp;
 }
 
 /* An ack was received */
