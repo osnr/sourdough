@@ -7,7 +7,7 @@ using namespace std;
 
 /* Default constructor */
 Controller::Controller( const bool debug )
-  : debug_( debug ), the_window_size(1)
+  : debug_( debug ), the_window_size(40)
 {}
 
 /* Get current window size, in datagrams */
@@ -56,11 +56,7 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
 	 << ", received @ time " << recv_timestamp_acked << " by receiver's clock)"
 	 << endl;
   }
-  if (timestamp_ack_received - send_timestamp_acked >= 1000)
-    the_window_size /= 2;
-  else
-    the_window_size += 1; 
-  the_window_size = (the_window_size == 0) ? 1 : the_window_size;
+  the_window_size = (timestamp_ack_received - send_timestamp_acked >= 200) ? 10 : 40;
 }
 
 /* How long to wait (in milliseconds) if there are no acks
