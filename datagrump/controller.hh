@@ -11,12 +11,16 @@ class Controller
 private:
   bool debug_; /* Enables debugging output */
   unsigned int the_window_size;
+
   unsigned int inflight;
+
   float tau;
   float bw;
+
   std::list<float> err;
   const unsigned int err_max_sz;
-  float sum_err;
+
+  std::list<uint64_t> recent_acks;
   /* Add member variables here */
 
 public:

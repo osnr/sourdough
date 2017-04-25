@@ -9,9 +9,11 @@ using namespace std;
 
 /* Default constructor */
 Controller::Controller( const bool debug )
-  : debug_( true || debug ), the_window_size(20), inflight(0), tau(45),
-  bw(0.5), err(), err_max_sz(50), sum_err(0)
-{}
+  : debug_( debug||true ), the_window_size(20), inflight(0), tau(45),
+  bw(0.5), err(), err_max_sz(50), recent_acks()
+{
+
+}
 
 /* Get current window size, in datagrams */
 unsigned int Controller::window_size( void )
@@ -22,11 +24,11 @@ unsigned int Controller::window_size( void )
   err.push_front(cur_err);
   if (err.size() > err_max_sz) err.pop_back();
 
-  sum_err = accumulate(err.begin(), err.end(), sum_err);
+  float sum_err = accumulate(err.begin(), err.end(), 0);
 
-  the_window_size += (1e-4 * (err.front() - err.back())
+  the_window_size += (1e-1 * sum_err) / err_max_sz;
       // + 0.0001 * (bw.front() - bw.back()) adjust to derivative of bw
-                    + 1e-5 * sum_err);
+
   if ( debug_ ) {
     cerr << "At time " << timestamp_ms()
 	 << " window size is " << the_window_size
@@ -45,7 +47,6 @@ void Controller::datagram_was_sent( const uint64_t sequence_number,
 				    const uint64_t send_timestamp )
                                     /* in milliseconds */
 {
-  /* Default: take no action */
   inflight++;
 
   if ( debug_ ) {
@@ -64,9 +65,28 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
 			       const uint64_t timestamp_ack_received )
                                /* when the ack was received (by sender) */
 {
-  /* Default: take no action */
   inflight--;
- // tau = (timestamp_ack_received - send_timestamp_acked) / 2;
+
+  tau = (timestamp_ack_received - send_timestamp_acked) / 2;
+
+  // recent_acks.push_front(timestamp_ack_received);
+
+  // uint64_t time = timestamp_ms();
+
+  // int packets_seen_10_ms = 0;
+
+  // list<uint64_t>::iterator it = recent_acks.begin();
+  // while (it != recent_acks.end()) {
+  //   int seen_ms_ago = time - *it;
+  //   if (seen_ms_ago > 10) { // If older than 10 ms
+  //     it = recent_acks.erase(it);
+  //     continue;
+  //   }
+
+  //   packets_seen_10_ms++;
+  // }
+
+  // bw = packets_seen_10_ms / 10.0;
 
   if ( debug_ ) {
     cerr << "At time " << timestamp_ack_received
