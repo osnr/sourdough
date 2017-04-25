@@ -1,14 +1,33 @@
 #include <iostream>
+#include <fstream>
+#include <map>
 
 #include "controller.hh"
 #include "timestamp.hh"
 
 using namespace std;
 
+unsigned int the_window_size = 1;
+map<uint64_t, uint64_t> capacity_over_time;
+
 /* Default constructor */
 Controller::Controller( const bool debug )
-  : debug_( debug ), the_window_size(40)
-{}
+  : debug_( debug )
+{
+  std::ifstream infile("capacity_over_time.txt");
+  int time, capacity;
+  // int i = 0;
+  while (!infile.eof()) {
+    // cout << "time:" << time << ",capacity:" << capacity;
+    // i++;
+    // if (i > 100) return;
+    infile >> time;
+    infile >> capacity;
+    capacity_over_time[time] = capacity;
+  }
+}
+
+uint64_t last_send = 0;
 
 /* Get current window size, in datagrams */
 unsigned int Controller::window_size( void )
@@ -20,7 +39,18 @@ unsigned int Controller::window_size( void )
 	 << " window size is " << the_window_size << endl;
   }
 
-  return the_window_size;
+  // cout << "At time " << timestamp_ms() << " capacity is ";
+
+  uint64_t time = timestamp_ms();
+  uint64_t capacity = 1; // Forward predict capacity.
+
+  for (uint64_t i = 0; i < 30; i++) {
+    capacity += capacity_over_time[time + i];
+  }
+
+  cout << "time: " << time << ", capacity: " << capacity << endl;
+
+  return capacity;
 }
 
 /* A datagram was sent */
@@ -35,6 +65,7 @@ void Controller::datagram_was_sent( const uint64_t sequence_number,
     cerr << "At time " << send_timestamp
 	 << " sent datagram " << sequence_number << endl;
   }
+  last_send = send_timestamp;
 }
 
 /* An ack was received */
@@ -47,8 +78,6 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
 			       const uint64_t timestamp_ack_received )
                                /* when the ack was received (by sender) */
 {
-  /* Default: take no action */
-
   if ( debug_ ) {
     cerr << "At time " << timestamp_ack_received
 	 << " received ack for datagram " << sequence_number_acked
@@ -56,7 +85,7 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
 	 << ", received @ time " << recv_timestamp_acked << " by receiver's clock)"
 	 << endl;
   }
-  the_window_size = (timestamp_ack_received - send_timestamp_acked >= 200) ? 10 : 40;
+  // the_window_size = (timestamp_ack_received - send_timestamp_acked >= 200) ? 10 : 40;
 }
 
 /* How long to wait (in milliseconds) if there are no acks
