@@ -56,7 +56,7 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
 	 << ", received @ time " << recv_timestamp_acked << " by receiver's clock)"
 	 << endl;
   }
-  if (recv_timestamp_acked - send_timestamp_acked >= 1000)
+  if (timestamp_ack_received - send_timestamp_acked >= 1000)
     the_window_size /= 2;
   else
     the_window_size += 1; 
