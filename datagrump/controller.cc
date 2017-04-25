@@ -1,6 +1,5 @@
 #include <iostream>
 #include <list>
-#include <numeric>
 
 #include "controller.hh"
 #include "timestamp.hh"
@@ -12,7 +11,7 @@ Controller::Controller( const bool debug )
   : debug_( debug||true ), the_window_size(20), inflight(0), tau(45),
   bw(0.5), err(), err_max_sz(50), recent_acks()
 {
-
+  err.resize(err_max_sz);
 }
 
 /* Get current window size, in datagrams */
@@ -21,20 +20,20 @@ unsigned int Controller::window_size( void )
   /* Default: fixed window size of 100 outstanding datagrams */
 
   float cur_err = bw*tau - inflight;
-  err.push_front(cur_err);
-  if (err.size() > err_max_sz) err.pop_back();
+  err.cshift(1);
+  err[0] = cur_err;
 
-  float sum_err = accumulate(err.begin(), err.end(), 0);
-
-  the_window_size += (1e-1 * sum_err) / err_max_sz;
+  int window = the_window_size + 1e-2 * err[0] + (2e-1 * err.sum()) / err_max_sz;
+  the_window_size = (window < 1) ? 1 : window;
       // + 0.0001 * (bw.front() - bw.back()) adjust to derivative of bw
 
   if ( debug_ ) {
     cerr << "At time " << timestamp_ms()
 	 << " window size is " << the_window_size
-         << " sum_err is " << sum_err
-         << " err_diff " << err.front() - err.back()
+         << " sum_err is " << err.sum()
+         << " err_diff " << err[0] - err[err_max_sz]
          << " bdp_est " << bw * tau
+         << " err list sz " << err.size()
          << endl;
   }
 

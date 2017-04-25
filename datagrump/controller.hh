@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <list>
+#include <valarray>
 
 /* Congestion controller interface */
 
@@ -17,7 +18,7 @@ private:
   float tau;
   float bw;
 
-  std::list<float> err;
+  std::valarray<float> err;
   const unsigned int err_max_sz;
 
   std::list<uint64_t> recent_acks;
