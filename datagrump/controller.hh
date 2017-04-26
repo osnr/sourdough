@@ -16,13 +16,22 @@ private:
   unsigned int inflight;
 
   float tau;
-  float bw;
 
   std::valarray<float> err;
   const unsigned int err_max_sz;
 
-  std::list<uint64_t> recent_acks;
-  /* Add member variables here */
+  std::valarray<unsigned int> recent_acks;
+  const unsigned int acks_max_sz;
+  unsigned int head_ack_time;
+  
+  std::valarray<unsigned int> recent_tau;
+  const unsigned int tau_max_sz;
+
+  const unsigned int timeout_delay;
+  unsigned int last_ack_proc;
+
+  std::valarray<float> bw;
+  unsigned int bw_max_sz;
 
 public:
   /* Public interface for the congestion controller */
