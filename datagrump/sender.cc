@@ -111,7 +111,7 @@ void DatagrumpSender::send_datagram( void )
 
 bool DatagrumpSender::window_is_open( void )
 {
-  return sequence_number_ - next_ack_expected_ < controller_.window_size();
+  return true;
 }
 
 int DatagrumpSender::loop( void )
@@ -123,7 +123,7 @@ int DatagrumpSender::loop( void )
      sending more datagrams */
   poller.add_action( Action( socket_, Direction::Out, [&] () {
 	/* Close the window */
-	while ( window_is_open() ) {
+	while ( controller_.window_size() > 0 ) {
 	  send_datagram();
 	}
 	return ResultType::Continue;
