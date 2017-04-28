@@ -5,6 +5,9 @@
 
 using namespace std;
 
+uint64_t slow_packets = 0;
+uint64_t all_packets = 0;
+
 /* Default constructor */
 Controller::Controller( const bool debug )
   : debug_( debug ), the_window_size(40)
@@ -23,6 +26,9 @@ unsigned int Controller::window_size( void )
   return the_window_size;
 }
 
+
+uint64_t sent_time[200000];
+
 /* A datagram was sent */
 void Controller::datagram_was_sent( const uint64_t sequence_number,
 				    /* of the sent datagram */
@@ -30,6 +36,7 @@ void Controller::datagram_was_sent( const uint64_t sequence_number,
                                     /* in milliseconds */
 {
   /* Default: take no action */
+  sent_time[sequence_number] = send_timestamp;
 
   if ( debug_ ) {
     cerr << "At time " << send_timestamp
@@ -56,7 +63,46 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
 	 << ", received @ time " << recv_timestamp_acked << " by receiver's clock)"
 	 << endl;
   }
-  the_window_size = (timestamp_ack_received - send_timestamp_acked >= 200) ? 10 : 40;
+
+  uint64_t signal_delay;
+  if (sequence_number_acked == 0) {
+    signal_delay = 0;
+  } else {
+    signal_delay = sent_time[sequence_number_acked] - sent_time[sequence_number_acked - 1];
+  }
+  signal_delay += timestamp_ack_received - send_timestamp_acked;
+
+  all_packets++;
+  if (signal_delay >= 100) {
+    slow_packets++;
+  }
+
+  if ((float)slow_packets / (float)all_packets > 0.04) {
+    // We're in an intolerable state.
+    the_window_size = 1;
+
+  } else {
+    the_window_size = 1;
+  }
+
+  // all_packets++;
+  // if (timestamp_ack_received - send_timestamp_acked >= 100) {
+  //   slow_packets++;
+  //   the_window_size = 10;
+
+  // } else {
+  //   the_window_size = 40;
+  // }
+
+  // if ((float)slow_packets / (float)all_packets > 0.04) {
+  //   // We are over our slow budget.
+  //   the_window_size = 1;
+
+  //   // // Maybe it's fast enough to probe, though...
+  //   // if (timestamp_ack_received - send_timestamp_acked < 100) {
+  //   //   the_window_size = ;
+  //   // }
+  // }
 }
 
 /* How long to wait (in milliseconds) if there are no acks
