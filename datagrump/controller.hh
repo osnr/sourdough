@@ -15,8 +15,7 @@ private:
 
   unsigned int inflight;
 
-  float tau;
-
+  // If integral is never used, err can just be float.
   std::valarray<float> err;
   const unsigned int err_max_sz;
 
@@ -28,12 +27,21 @@ private:
   const unsigned int tau_max_sz;
 
   const unsigned int timeout_delay;
-  unsigned int last_ack_proc;
 
-  std::valarray<float> bw;
-  unsigned int bw_max_sz;
-  float bw_quant;
-  float cumul;
+  std::valarray<uint64_t> sitting;
+  unsigned int sitting_max_sz;
+  uint64_t smallest_expected;
+  float sit_per_packet;
+
+  // Some parameters to iterate over
+  float win_incr_gain;
+  float win_decr_gain;
+  unsigned int max_win_sz;
+  unsigned int signal_delay_target;
+  float tau_qt; // tau quantile
+  float sit_qt; // sitting time quantile
+
+
 
 public:
   /* Public interface for the congestion controller */

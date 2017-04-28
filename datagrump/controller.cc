@@ -2,6 +2,7 @@
 #include <list>
 #include <algorithm>
 #include <cmath>
+#include <numeric>
 
 #include "controller.hh"
 #include "timestamp.hh"
@@ -10,28 +11,23 @@ using namespace std;
 
 /* Default constructor */
 Controller::Controller( const bool debug )
-  : debug_( debug || true ), the_window_size(10), inflight(0), tau(45),
-  err(), err_max_sz(201), recent_acks(), acks_max_sz(15),
-  head_ack_time(0), recent_tau(), tau_max_sz(91), timeout_delay(500), last_ack_proc(0),
-  bw(), bw_max_sz(91), bw_quant(0.5), cumul(0)
+  : debug_( debug ), the_window_size(10), inflight(0),
+  err(), err_max_sz(41), recent_acks(), acks_max_sz(15),
+  head_ack_time(0), recent_tau(), tau_max_sz(91), timeout_delay(500),
+  sitting(), sitting_max_sz(31), smallest_expected(1), sit_per_packet(1),
+  win_incr_gain(0.5), win_decr_gain(2.0), max_win_sz(35), signal_delay_target(200),
+  tau_qt(0.5), sit_qt(0.7)
 {
   err.resize(err_max_sz, 0);
   recent_acks.resize(acks_max_sz, 1);
-  recent_tau.resize(tau_max_sz, tau);
-  bw.resize(bw_max_sz, 0.1);
+  recent_tau.resize(tau_max_sz, 35);
+  sitting.resize(sitting_max_sz, 0);
 }
 
 
 /* Get current window size, in datagrams */
 unsigned int Controller::window_size( void )
 {
-  // Note: Seems to have little to no effect, though sounds nice.
-  // If we haven't received any ack in a long time, there's likely a long
-  // queue, so reduce window size.
- // if (((int)last_ack_proc - (int)timestamp_ms()) > (0.5*timeout_delay)) {
- //   the_window_size -= 1;
- // }
-
     if ( debug_ ) {
       cerr << "At time " << timestamp_ms()
            << " window size is " << the_window_size
@@ -64,7 +60,6 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
 			       const uint64_t timestamp_ack_received )
                                /* when the ack was received (by sender) */
 {
-  last_ack_proc = timestamp_ack_received;
   inflight--;
 
   // Save the most recent propagation delay estimates.
@@ -72,97 +67,46 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
   recent_tau[0] = (timestamp_ack_received - send_timestamp_acked) / 2;
   valarray<unsigned int> sorted_tau = recent_tau;
   sort(begin(sorted_tau), end(sorted_tau));
-  // Keep a low quantile (Heavy tailed distribution, so pick a low quantile
-  // to increase chance of being near true value of tau). Greater than the
-  // timeout delay is not actionable, so set it as max.
-  tau = min(sorted_tau[(tau_max_sz*0.2)], timeout_delay/2);
 
-  // Only keep stats on bandwidth if RTT is reasonable. Otherwise,
-  // this incoming packet is not representative of current bw.
-  if (recent_tau[0] < timeout_delay/2) {
-    unsigned int time_diff = timestamp_ack_received - head_ack_time;
-    recent_acks = recent_acks.shift(time_diff);
-    recent_acks[0]++;
-    // Track last time parameter estimates were updated for possible use later.
-    head_ack_time = timestamp_ack_received;
-    bw = bw.cshift(1);
-    bw[0] = (float)recent_acks.sum() / (float)acks_max_sz;
+  // Estimate queuing delays.
+  uint64_t sequence_diff = sequence_number_acked - smallest_expected;
+  if (sequence_diff < sitting_max_sz) {
+    sitting[sequence_diff] = send_timestamp_acked;
+    if (sitting.min() != 0) {
+      valarray<uint64_t> diff_sit = sitting - sitting.shift(-1);
+      diff_sit = diff_sit.shift(1);
+      valarray<uint64_t> sorted_diff_sit = diff_sit;
+      sort(begin(sorted_diff_sit), end(sorted_diff_sit));
+      sit_per_packet = sorted_diff_sit[sit_qt*sitting_max_sz+1];
+      sit_per_packet = max(1.0, (double)sit_per_packet);
+      smallest_expected = sequence_number_acked + 5;
+      sitting = 0;
+    }
   }
 
-    // Quantiled bw
-    valarray<float>bw_sort = bw;
-    sort(begin(bw_sort), end(bw_sort));
-    float bw_est = bw_sort[(float)bw_max_sz*bw_quant];
+  // Adjust window
+  float spare_time = signal_delay_target - 2*sorted_tau[tau_max_sz*tau_qt+1];
+  float cur_err = max((double)spare_time, 0.0) / sit_per_packet - inflight;
+  err = err.cshift(1);
+  err[0] = cur_err;
 
-    // BDP - inflight 
-    // "Predict" bandwidth with a stupid tangent fit. Lower tau seems to
-    // yield better results (i.e. we can't actually precit too far, or
-    // higher derivatives too large).
-    float bw_pred = bw_est + 0.5*tau*(bw[0] - bw[bw_max_sz-1]) / bw_max_sz;
-    bw_pred = bw_pred < 0 ? 0 : bw_pred;
+  float del = (cur_err < 0) ? win_decr_gain * cur_err : win_incr_gain * cur_err;
+  int window = the_window_size + del;
 
-    float cur_err = bw_pred*tau - inflight;
-    err = err.cshift(1);
-    err[0] = cur_err;
+  window = max(1, window);
+  the_window_size = min((int)max_win_sz, window);
 
-    // Mean error
-    float i_err = err.sum() / err_max_sz;
-
-    // Window size increase ("gain"). Dampen the negative bias here.
-    float k = (i_err < 0) ? 0.0005*i_err : i_err;
-    // Protect against wild increases. Might be adjusted for more
-    // aggressive behavior. (don't increase window by unreasonable
-    // amounts because it's hard to recover from).
-    k = min(2*(bw_est*tau-inflight), k);
-
-    // Perhaps limit how much window size can be reduced in one step.
-    // Seems to make the system unstable (large + errors need correcting).
-    //k = max(k, -2*(bw_est*100-inflight));
-    //
-    int window = the_window_size + k;
-
-    // Increase window size if steady state reached.
-    valarray<float> err_diff = err - err.shift(1);
-    err_diff = abs(err_diff.shift(-1));
-
-    //cerr << "err diff " << err_diff.sum() / err_max_sz<< endl;
-    // Average movement in window, i.e. what constitutes a steady-state,
-    // has high impact on risk-taking behavior.
-    if (err_diff.sum() / err_max_sz  < 2) {
-      // The longer we stay in steady-state across acks, the more riskily
-      // we want to behave.
-      cumul += 0.01;
-      window += 8.0 + cumul;
-
-      bw_quant += 0.03;
-      bw_quant = min(bw_quant, (float)0.8);
-    } else { // Decrease "steady-state counter" every time there's movement.
-      cumul *= 0.9;
-    }
-    
-    // Here if the conservative integrator sends us to 0, we want to fight it
-    // so we set the window to a number > 0. Impacts risk-taking behavior.
-    the_window_size = (window < 1) ? 3 : window;
-    // If window is in Small Land despite our best efforts, make the bw estimate
-    // conservative too.
-    if (window <= 3) {
-      bw_quant = 0.6;
-    }
   if ( debug_ ) {
     cerr << "At time " << timestamp_ack_received
 	 << " received ack for datagram " << sequence_number_acked
 	 << " (send @ time " << send_timestamp_acked
 	 << ", received @ time " << recv_timestamp_acked << " by receiver's clock)"
-         << " | bw: " << bw[0]
-         << " | recent_acks[0]: " << recent_acks[0]
 	 << endl;
       cerr << "At time " << timestamp_ms()
            << " window size is " << the_window_size
-           << " sum_err is " << err.sum() / err_max_sz
-           << " err_diff " << err[0] - err[2]
-           << " bdp_est " << (bw_est* tau)
-           << " bw " << bw_est
-           << " tau " << tau
+           << "err is " << err[0]
+           << " sit_per " << sit_per_packet
+           << " tau " << recent_tau[0]
            << endl;
   }
 }
