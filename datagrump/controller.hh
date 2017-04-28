@@ -32,6 +32,8 @@ private:
 
   std::valarray<float> bw;
   unsigned int bw_max_sz;
+  float bw_quant;
+  float cumul;
 
 public:
   /* Public interface for the congestion controller */
