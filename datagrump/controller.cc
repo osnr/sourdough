@@ -14,6 +14,7 @@ uint64_t sent_times[200000];
 uint64_t last_send = 0;
 
 uint64_t latest_delay = 80;
+uint64_t latest_delay_send = 0;
 
 int slow_packets = 0;
 int all_packets = 0;
@@ -41,9 +42,19 @@ unsigned int Controller::window_size( void )
   //   return (rand() % (latest_delay * 1000)) == 0;
   // }
 
-  if (timestamp_ms() - last_send > 30) {
-    last_send = timestamp_ms();
-    return 1;
+  if ( (float)slow_packets/(float)all_packets > 0.04 ) { // Optimize for low latency.
+    if (timestamp_ms() - last_send > 40) {
+      last_send = timestamp_ms();
+      return 1;
+    }
+    return 0;
+
+  } else { // Fixed-window.
+    if (inflight > 40) {
+      return 0;
+    } else {
+      return 1;
+    }
   }
 
   return 0;
@@ -95,7 +106,17 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
   }
 
   inflight--;
-  latest_delay = (latest_delay/3 + 2*( (timestamp_ack_received - send_timestamp_acked) + (sent_times[sequence_number_acked] - sent_times[sequence_number_acked - 1]) ))/2;
+
+  all_packets++;
+  uint64_t signal_delay = (timestamp_ack_received - send_timestamp_acked) + (sent_times[sequence_number_acked] - sent_times[sequence_number_acked - 1]);
+  if (signal_delay > 150) {
+    slow_packets++;
+  }
+
+  if (send_timestamp_acked > latest_delay_send) {
+    latest_delay = signal_delay;
+    latest_delay_send = send_timestamp_acked;
+  }
 
 
 }
