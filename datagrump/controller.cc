@@ -12,13 +12,12 @@ using namespace std;
 /* Default constructor */
 Controller::Controller( const bool debug )
   : debug_( debug ), the_window_size(10), inflight(0),
-  err(), err_max_sz(41), recent_acks(), acks_max_sz(15),
-  head_ack_time(0), recent_tau(), tau_max_sz(91), timeout_delay(500),
-  sitting(), sitting_max_sz(31), smallest_expected(1), sit_per_packet(1),
-  win_incr_gain(0.5), win_decr_gain(2.0), max_win_sz(35), signal_delay_target(200),
-  tau_qt(0.5), sit_qt(0.7)
+  recent_acks(), acks_max_sz(15), head_ack_time(0),
+  recent_tau(), tau_max_sz(91), timeout_delay(500), sitting(),
+  sitting_max_sz(91), smallest_expected(1), sit_per_packet(1),
+  win_incr_gain(0.5), win_decr_gain(2), max_win_sz(50), signal_delay_target(75),
+  tau_qt(0.3)
 {
-  err.resize(err_max_sz, 0);
   recent_acks.resize(acks_max_sz, 1);
   recent_tau.resize(tau_max_sz, 35);
   sitting.resize(sitting_max_sz, 0);
@@ -75,10 +74,7 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
     if (sitting.min() != 0) {
       valarray<uint64_t> diff_sit = sitting - sitting.shift(-1);
       diff_sit = diff_sit.shift(1);
-      valarray<uint64_t> sorted_diff_sit = diff_sit;
-      sort(begin(sorted_diff_sit), end(sorted_diff_sit));
-      sit_per_packet = sorted_diff_sit[sit_qt*sitting_max_sz+1];
-      sit_per_packet = max(1.0, (double)sit_per_packet);
+      sit_per_packet = max(1.0, (double)diff_sit.max());
       smallest_expected = sequence_number_acked + 5;
       sitting = 0;
     }
@@ -87,8 +83,6 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
   // Adjust window
   float spare_time = signal_delay_target - 2*sorted_tau[tau_max_sz*tau_qt+1];
   float cur_err = max((double)spare_time, 0.0) / sit_per_packet - inflight;
-  err = err.cshift(1);
-  err[0] = cur_err;
 
   float del = (cur_err < 0) ? win_decr_gain * cur_err : win_incr_gain * cur_err;
   int window = the_window_size + del;
@@ -104,7 +98,7 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
 	 << endl;
       cerr << "At time " << timestamp_ms()
            << " window size is " << the_window_size
-           << "err is " << err[0]
+           << "err is " << cur_err
            << " sit_per " << sit_per_packet
            << " tau " << recent_tau[0]
            << endl;

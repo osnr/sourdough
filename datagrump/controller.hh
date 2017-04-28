@@ -15,10 +15,6 @@ private:
 
   unsigned int inflight;
 
-  // If integral is never used, err can just be float.
-  std::valarray<float> err;
-  const unsigned int err_max_sz;
-
   std::valarray<unsigned int> recent_acks;
   const unsigned int acks_max_sz;
   unsigned int head_ack_time;
@@ -33,13 +29,11 @@ private:
   uint64_t smallest_expected;
   float sit_per_packet;
 
-  // Some parameters to iterate over
   float win_incr_gain;
   float win_decr_gain;
   unsigned int max_win_sz;
   unsigned int signal_delay_target;
   float tau_qt; // tau quantile
-  float sit_qt; // sitting time quantile
 
 
 
