@@ -41,23 +41,38 @@ unsigned int Controller::window_size( void )
   // if (latest_delay > 100 || inflight > 80) {
   //   return (rand() % (latest_delay * 1000)) == 0;
   // }
+  if (timestamp_ms() - last_send > 40) {
+    last_send = timestamp_ms();
+    return 1;
+  }
 
-  if ( (float)slow_packets/(float)all_packets > 0.04 ) { // Optimize for low latency.
-    if (timestamp_ms() - last_send > 40) {
-      last_send = timestamp_ms();
-      return 1;
-    }
-    return 0;
-
-  } else { // Fixed-window.
-    if (inflight > 40) {
-      return 0;
-    } else {
-      return 1;
-    }
+  if (latest_delay < 100 && inflight < 40) {
+    return 1;
   }
 
   return 0;
+  
+  // if ( (float)slow_packets/(float)all_packets > 0.04 ) { // Optimize for low latency.
+
+  //     if (inflight > 3000/(int)latest_delay) { // Now's our chance. Be aggressive.
+  //       return 0;
+  //     } else {
+  //       return 1;
+  //     }
+  //   }
+    
+
+  //   return 0;
+
+  // } else { // OK, we're under budget.
+  //   if (inflight > 40) { // Aggressive.
+  //     return 0;
+  //   } else {
+  //     return 1;
+  //   }
+  // }
+
+  // return 0;
   // int64_t r = rand();
   // int64_t m = latest_delay * inflight * 10 + 1;
   // return (r % m) == 0;
