@@ -1,0 +1,300 @@
++ run 1
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=1
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 0.23 Mbits/s (4.5% utilization)
+95th percentile per-packet queueing delay: 19 ms
+95th percentile signal delay: 111 ms
++ run 1
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=1
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 0.23 Mbits/s (4.5% utilization)
+95th percentile per-packet queueing delay: 19 ms
+95th percentile signal delay: 110 ms
++ run 2
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=2
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 0.45 Mbits/s (8.9% utilization)
+95th percentile per-packet queueing delay: 22 ms
+95th percentile signal delay: 104 ms
++ run 2
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=2
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 0.45 Mbits/s (8.9% utilization)
+95th percentile per-packet queueing delay: 21 ms
+95th percentile signal delay: 103 ms
++ run 5
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=5
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 1.08 Mbits/s (21.4% utilization)
+95th percentile per-packet queueing delay: 33 ms
+95th percentile signal delay: 108 ms
++ run 5
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=5
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 1.08 Mbits/s (21.3% utilization)
+95th percentile per-packet queueing delay: 32 ms
+95th percentile signal delay: 109 ms
++ run 10
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=10
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 1.98 Mbits/s (39.2% utilization)
+95th percentile per-packet queueing delay: 56 ms
+95th percentile signal delay: 155 ms
++ run 10
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=10
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 1.97 Mbits/s (39.1% utilization)
+95th percentile per-packet queueing delay: 56 ms
+95th percentile signal delay: 155 ms
++ run 20
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=20
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 3.30 Mbits/s (65.4% utilization)
+95th percentile per-packet queueing delay: 96 ms
+95th percentile signal delay: 278 ms
++ run 20
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=20
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 3.30 Mbits/s (65.5% utilization)
+95th percentile per-packet queueing delay: 96 ms
+95th percentile signal delay: 278 ms
++ run 40
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=40
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 4.53 Mbits/s (89.9% utilization)
+95th percentile per-packet queueing delay: 192 ms
+95th percentile signal delay: 505 ms
++ run 40
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=40
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 4.54 Mbits/s (90.0% utilization)
+95th percentile per-packet queueing delay: 191 ms
+95th percentile signal delay: 504 ms
++ run 50
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=50
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 4.79 Mbits/s (95.0% utilization)
+95th percentile per-packet queueing delay: 237 ms
+95th percentile signal delay: 609 ms
++ run 50
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=50
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 4.79 Mbits/s (94.9% utilization)
+95th percentile per-packet queueing delay: 237 ms
+95th percentile signal delay: 609 ms
++ run 80
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=80
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 4.99 Mbits/s (99.1% utilization)
+95th percentile per-packet queueing delay: 403 ms
+95th percentile signal delay: 898 ms
++ run 80
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=80
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 4.99 Mbits/s (99.0% utilization)
+95th percentile per-packet queueing delay: 403 ms
+95th percentile signal delay: 897 ms
++ run 100
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=100
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 5.02 Mbits/s (99.6% utilization)
+95th percentile per-packet queueing delay: 516 ms
+95th percentile signal delay: 1054 ms
++ run 100
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=100
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 5.02 Mbits/s (99.6% utilization)
+95th percentile per-packet queueing delay: 516 ms
+95th percentile signal delay: 1053 ms
++ run 200
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=200
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 5.04 Mbits/s (99.9% utilization)
+95th percentile per-packet queueing delay: 1185 ms
+95th percentile signal delay: 1734 ms
++ run 200
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=200
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 5.04 Mbits/s (99.9% utilization)
+95th percentile per-packet queueing delay: 1186 ms
+95th percentile signal delay: 1735 ms
++ run 500
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=500
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 5.04 Mbits/s (100.0% utilization)
+95th percentile per-packet queueing delay: 2857 ms
+95th percentile signal delay: 3848 ms
++ run 500
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=500
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 5.04 Mbits/s (100.0% utilization)
+95th percentile per-packet queueing delay: 2857 ms
+95th percentile signal delay: 3848 ms
++ run 1000
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=1000
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 5.04 Mbits/s (99.9% utilization)
+95th percentile per-packet queueing delay: 5634 ms
+95th percentile signal delay: 6665 ms
++ run 1000
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=1000
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 5.04 Mbits/s (100.0% utilization)
+95th percentile per-packet queueing delay: 5633 ms
+95th percentile signal delay: 6663 ms
++ run 2000
++ touch controller.cc
++ make CPPFLAGS=-DWINDOW_SIZE=2000
++ ./run-contest fixed-window
+Listening on :::9090
+Sending to 100.64.0.1:9090
+terminate called after throwing an instance of 'unix_error'
+  what():  send: Invalid argument
+Average capacity: 5.04 Mbits/s
+Average throughput: 5.04 Mbits/s (100.0% utilization)
+95th percentile per-packet queueing delay: 10676 ms
+95th percentile signal delay: 11113 ms
