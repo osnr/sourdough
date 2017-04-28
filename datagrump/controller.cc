@@ -9,15 +9,12 @@ using namespace std;
 
 int inflight = 0;
 
-uint64_t sent_times[200000];
+uint64_t latest_receive = 0;
+uint64_t receive_spacing = 0;
 
 uint64_t last_send = 0;
 
-uint64_t latest_delay = 80;
-uint64_t latest_delay_send = 0;
-
-int slow_packets = 0;
-int all_packets = 0;
+uint64_t last_delay = 0;
 
 
 /* Default constructor */
@@ -26,58 +23,33 @@ Controller::Controller( const bool debug )
 {
 }
 
-int countdown = -1;
 
 /* Get current window size, in datagrams */
 unsigned int Controller::window_size( void )
 {
-  /* Default: fixed window size of 100 outstanding datagrams */
-
   if ( debug_ ) {
     cerr << "At time " << timestamp_ms()
 	 << " window size is " << the_window_size << endl;
   }
 
-  // if (latest_delay > 100 || inflight > 80) {
-  //   return (rand() % (latest_delay * 1000)) == 0;
+  // If there's any unusual delay, we've overshot.
+  // But we don't want to sawtooth down to 0.... fixme?
+  // if (last_delay > 100 && inflight > 0) {
+  //   return 0;
   // }
-  if (timestamp_ms() - last_send > 40) {
+
+  if (timestamp_ms() - last_send > receive_spacing) {
     last_send = timestamp_ms();
     return 1;
   }
 
-  if (latest_delay < 100 && inflight < 40) {
-    return 1;
-  }
-
-  return 0;
-  
-  // if ( (float)slow_packets/(float)all_packets > 0.04 ) { // Optimize for low latency.
-
-  //     if (inflight > 3000/(int)latest_delay) { // Now's our chance. Be aggressive.
-  //       return 0;
-  //     } else {
-  //       return 1;
-  //     }
-  //   }
-    
-
-  //   return 0;
-
-  // } else { // OK, we're under budget.
-  //   if (inflight > 40) { // Aggressive.
-  //     return 0;
-  //   } else {
-  //     return 1;
-  //   }
+  // // FIXME: Probe every so often.
+  // probestate = (probestate + 1) % 1000000;
+  // if (probestate == 0) {
+  //   receive_spacing = 0;
   // }
 
-  // return 0;
-  // int64_t r = rand();
-  // int64_t m = latest_delay * inflight * 10 + 1;
-  // return (r % m) == 0;
-
-  // return 1;
+  return 0;
 }
 
 /* A datagram was sent */
@@ -89,7 +61,6 @@ void Controller::datagram_was_sent( const uint64_t sequence_number,
   /* Default: take no action */
 
   inflight++;
-  sent_times[sequence_number] = send_timestamp;
   last_send = send_timestamp;
 
   if ( debug_ ) {
@@ -122,18 +93,12 @@ void Controller::ack_received( const uint64_t sequence_number_acked,
 
   inflight--;
 
-  all_packets++;
-  uint64_t signal_delay = (timestamp_ack_received - send_timestamp_acked) + (sent_times[sequence_number_acked] - sent_times[sequence_number_acked - 1]);
-  if (signal_delay > 150) {
-    slow_packets++;
-  }
+  if (timestamp_ack_received < latest_receive) return;
 
-  if (send_timestamp_acked > latest_delay_send) {
-    latest_delay = signal_delay;
-    latest_delay_send = send_timestamp_acked;
-  }
+  receive_spacing = timestamp_ack_received - latest_receive;
+  latest_receive = timestamp_ack_received;
 
-
+  last_delay = (timestamp_ack_received - send_timestamp_acked);
 }
 
 /* How long to wait (in milliseconds) if there are no acks
